@@ -1,8 +1,12 @@
 "use client";
 
+import { CartItem } from "@/interfaces/Cart";
+import { IVariants } from "@/interfaces/Variants";
+import { addItem } from "@/store/cartSlice";
+import { useAppDispatch } from "@/store/store";
+import useMetadata from "@/utils/useMetadata";
 import { Dispatch, SetStateAction, useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
-// import { useCartContext, useAddToCartContext } from "@/context/Store";
 
 function ProductForm({
   title,
@@ -13,24 +17,19 @@ function ProductForm({
 }: {
   title: string;
   handle: string;
-  variants: [
-    {
-      node: {
-        id: string;
-        price: string;
-        title: string;
-      };
-    }
-  ];
+  variants: IVariants[];
   setVariantPrice: Dispatch<SetStateAction<string>>;
   mainImg: {
     originalSrc: string;
     altText: string;
   };
 }) {
+  useMetadata(title, "Product");
+  const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState(1);
   const [variantId, setVariantId] = useState(variants[0].node.id);
   const [variant, setVariant] = useState(variants[0]);
+
   const isLoading = false;
   // const addToCart = useAddToCartContext();
 
@@ -54,19 +53,16 @@ function ProductForm({
   }
 
   async function handleAddToCart() {
-    // const varId = variant.node.id;
-    // // update store context
-    // if (quantity !== "") {
-    //   addToCart({
-    //     productTitle: title,
-    //     productHandle: handle,
-    //     productImage: mainImg,
-    //     variantId: varId,
-    //     variantPrice: variant.node.price,
-    //     variantTitle: variant.node.title,
-    //     variantQuantity: quantity,
-    //   });
-    // }
+    const newItem: CartItem = {
+      id: handle,
+      quantity,
+      price: parseInt(variant.node.price),
+      title,
+      imgSrc: mainImg.originalSrc,
+      variant: variant,
+    };
+
+    dispatch(addItem(newItem));
   }
 
   function updateQuantity(e: string) {

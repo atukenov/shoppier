@@ -6,7 +6,6 @@ import ProductInfo from "./ProductInfo";
 import ProductForm from "./ProductForm";
 
 const ProductDetails = ({ productData }: { productData: IProduct }) => {
-  console.log(productData, "dfasadsf");
   const [variantPrice, setVariantPrice] = useState<string>("");
   useEffect(() => {
     setVariantPrice(productData.variants.edges[0].node.price);

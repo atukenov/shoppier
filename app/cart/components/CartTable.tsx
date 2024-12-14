@@ -1,37 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import { useUpdateCartQuantityContext } from "@/context/Store";
 import Link from "next/link";
 import Price from "@/components/Price";
 import { FaTimes } from "react-icons/fa";
-// import { getCartSubTotal } from "@/utils/helpers";
+import { useSelector } from "react-redux";
+import { RootState, useAppDispatch } from "@/store/store";
+import { CartItem } from "@/interfaces/Cart";
+import Image from "next/image";
+import { removeItem } from "@/store/cartSlice";
 
-function CartTable({ cart }: { cart: unknown }) {
-  // const updateCartQuantity = useUpdateCartQuantityContext();
-  const [cartItems, setCartItems] = useState([
-    {
-      variantId: "1",
-      productImage: {
-        originalSrc: "/icons/iconDefault.png",
-        altText: "",
-      },
-      productHandle: 3,
-      productTitle: "Prod Title",
-      variantTitle: "M",
-      variantQuantity: 3,
-      variantPrice: "1235",
-    },
-  ]);
-  const [subtotal, setSubtotal] = useState(0);
+function CartTable() {
+  const dispatch = useAppDispatch();
+  const { items, totalPrice, totalQuantity } = useSelector(
+    (state: RootState) => state.cart
+  );
+
+  // id: string;
+  // variantId: string;
+  // imgSrc: string;
+  // title: string;
+  // price: number;
+  // quantity: number;
+
+  const [cartItems, setCartItems] = useState<CartItem[]>(items);
+  const [subtotal, setSubtotal] = useState(totalPrice);
 
   useEffect(() => {
-    // setCartItems(cart);
-    // setSubtotal(getCartSubTotal(cart));
-  }, [cart]);
+    setCartItems(items);
+    setSubtotal(totalPrice);
+  }, [items, totalPrice, totalQuantity]);
 
-  function updateItem(id: string, quantity: string) {
-    // updateCartQuantity(id, quantity);
+  function updateItem(id: string, variantId: string, quantity: string) {
+    dispatch(removeItem({ id, variantId, quantity: parseInt(quantity) }));
   }
 
   return (
@@ -50,23 +51,23 @@ function CartTable({ cart }: { cart: unknown }) {
         <tbody className="divide-y divide-palette-lighter">
           {cartItems.map((item) => (
             <tr
-              key={item.variantId}
+              key={item.variant.node.id}
               className="text-sm sm:text-base text-gray-600 text-center"
             >
               <td className="font-primary font-medium px-4 sm:px-6 py-4 flex items-center">
-                <img
-                  src={item.productImage.originalSrc}
-                  alt={item.productImage.altText}
+                <Image
+                  src={item.imgSrc}
+                  alt=""
                   height={64}
                   width={64}
                   className={`hidden sm:inline-flex`}
                 />
                 <Link
                   passHref
-                  href={`/products/${item.productHandle}`}
+                  href={`/products/${item.id}`}
                   className="pt-1 hover:text-palette-dark"
                 >
-                  {item.productTitle}, {item.variantTitle}
+                  {item.title}, {item.variant.node.title}
                 </Link>
               </td>
               <td className="font-primary font-medium px-4 sm:px-6 py-4">
@@ -77,19 +78,27 @@ function CartTable({ cart }: { cart: unknown }) {
                   name="variant-quantity"
                   min="1"
                   step="1"
-                  value={item.variantQuantity}
-                  onChange={(e) => updateItem(item.variantId, e.target.value)}
+                  value={item.quantity}
+                  onChange={(e) =>
+                    updateItem(item.id, item.variant.node.id, e.target.value)
+                  }
                   className="text-gray-900 form-input border border-gray-300 w-16 rounded-sm focus:border-palette-light focus:ring-palette-light"
                 />
               </td>
               <td className="font-primary text-base font-light px-4 sm:px-6 py-4 hidden sm:table-cell">
-                <Price currency="$" num={item.variantPrice} numSize="text-lg" />
+                <Price
+                  currency="$"
+                  num={item.price.toString()}
+                  numSize="text-lg"
+                />
               </td>
               <td className="font-primary font-medium px-4 sm:px-6 py-4">
                 <button
                   aria-label="delete-item"
                   className=""
-                  onClick={() => updateItem(item.variantId, 0)}
+                  onClick={() =>
+                    updateItem(item.id, item.variant.node.id, "-1")
+                  }
                 >
                   <FaTimes className="w-8 h-8 text-palette-primary border border-palette-primary p-1 hover:bg-palette-lighter" />
                 </button>
@@ -103,7 +112,11 @@ function CartTable({ cart }: { cart: unknown }) {
                 Subtotal
               </td>
               <td className="font-primary text-lg text-palette-primary font-medium px-4 sm:px-6 py-4">
-                <Price currency="$" num={"16852"} numSize="text-xl" />
+                <Price
+                  currency="$"
+                  num={totalPrice.toString()}
+                  numSize="text-xl"
+                />
               </td>
               <td></td>
             </tr>

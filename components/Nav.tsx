@@ -1,23 +1,22 @@
 "use client";
 
+import { RootState } from "@/store/store";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import { MdDiamond } from "react-icons/md";
+import { useSelector } from "react-redux";
 
 const Nav = () => {
-  // const cart = useCartContext()[0];
+  const totalQuantity = useSelector(
+    (state: RootState) => state.cart.totalQuantity
+  );
 
-  const [cartItems, setCartItems] = useState(0);
+  const [cartItems, setCartItems] = useState(totalQuantity);
 
   useEffect(() => {
-    let numItems = 4;
-    numItems++;
-    // cart.forEach((item) => {
-    //   numItems += item.variantQuantity;
-    // });
-    setCartItems(numItems);
-  }, []);
+    setCartItems(totalQuantity);
+  }, [totalQuantity]);
 
   return (
     <header className="border-b border-palette-lighter sticky top-0 z-20 bg-white">
